@@ -1,5 +1,5 @@
 {
-    "name": "islandora/PDX",
+    "name": "islandora/pdx",
     "description": "Top level container for the various PCDM related Islandora CLAW microservices",
     "type": "library",
     "homepage": "http://islandora.ca/CLAW",
