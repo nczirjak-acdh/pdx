@@ -1,6 +1,6 @@
 <?php
 
-namespace Islandora\CollectionService\Provider;
+namespace Islandora\PDX\CollectionService\Provider;
 
 use Silex\Application;
 use Silex\ServiceProviderInterface;
@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\Yaml\Yaml;
-use Islandora\CollectionService\Controller\CollectionController;
+use Islandora\PDX\CollectionService\Controller\CollectionController;
 
 class CollectionServiceProvider implements ServiceProviderInterface, ControllerProviderInterface
 {
@@ -42,7 +42,7 @@ class CollectionServiceProvider implements ServiceProviderInterface, ControllerP
         }
         $app['islandora.collectioncontroller'] = $app->share(
             function () use ($app) {
-                return new \Islandora\CollectionService\Controller\CollectionController($app, $app['UuidGenerator']);
+                return new CollectionController($app, $app['UuidGenerator']);
             }
         );
         if (!isset($app['twig'])) {

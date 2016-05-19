@@ -1,6 +1,6 @@
 <?php
 
-namespace Islandora\CollectionService;
+namespace Islandora\PDX;
 
 require_once __DIR__.'/../vendor/autoload.php';
 
@@ -11,59 +11,40 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Psr\Http\Message\ResponseInterface;
 use Silex\Provider\TwigServiceProvider;
-use Islandora\ResourceService\Provider\ResourceServiceProvider;
-use Islandora\CollectionService\Provider\CollectionServiceProvider;
-use Islandora\TransactionService\Provider\TransactionServiceProvider;
+use Islandora\PDX\CollectionService\Provider\CollectionServiceProvider;
+use Islandora\Crayfish\Provider\CrayfishProvider;
 
 date_default_timezone_set('UTC');
 
 $app = new Application();
 
 $app['debug'] = true;
+$app['islandora.BasePath'] = __DIR__;
 $app->register(new \Silex\Provider\ServiceControllerServiceProvider());
-$app->register(
-    new \Silex\Provider\TwigServiceProvider(),
-    array(
-      'twig.path' => __DIR__.'/../templates',
-    )
-);
+// TODO: Not register all template directories right now.
+$app->register(new \Silex\Provider\TwigServiceProvider(), array(
+  'twig.path' => array(
+    __DIR__ . 'CollectionService/templates',
+  ),
+));
 
-$islandoraResourceServiceProvider = new ResourceServiceProvider;
-//Registers Resource Service and defines current app's path for config context
-$app->register(
-    $islandoraResourceServiceProvider,
-    array(
-      'islandora.BasePath' => __DIR__,
-    )
-);
-$app->mount("/islandora", $islandoraResourceServiceProvider);
-
-$islandoraTransactionService = new TransactionServiceProvider;
-
-$app->register($islandoraTransactionService);
-$app->mount("/islandora", $islandoraTransactionService);
-
-$islandoraCollectionService = new CollectionServiceProvider;
+$islandoraCollectionServiceProvider = new CollectionServiceProvider;
+$islandoraCrayfishProvider = new CrayfishProvider;
 
 $app->register(
-    $islandoraCollectionService,
+    $islandoraCollectionServiceProvider,
     array(
-      'UuidGenerator' => new UuidGenerator(),
+        'UuidGenerator' => new UuidGenerator(),
     )
 );
-$app->mount("/islandora", $islandoraCollectionService);
+$app->register($islandoraCrayfishProvider);
+
+$app->mount("/islandora", $islandoraCollectionServiceProvider);
+$app->mount("/islandora", $islandoraCrayfishProvider);
 
 /**
- * Convert returned Guzzle responses to Symfony responses.
+ * Convert returned Guzzle responses to Symfony responses, type hinted.
  */
-
-$app->view(
-    function (ResponseInterface $psr7) {
-        return new Response($psr7->getBody(), $psr7->getStatusCode(), $psr7->getHeaders());
-    }
-);
-
-
 $app->after(
     function (Request $request, Response $response) use ($app) {
         $response->headers->set('X-Powered-By', 'Islandora Collection REST API v'
@@ -71,13 +52,16 @@ $app->after(
     }
 );
 
+$app->view(function (ResponseInterface $psr7) {
+    return new Response($psr7->getBody(), $psr7->getStatusCode(), $psr7->getHeaders());
+});
+
 //Common error Handling
 $app->error(
     function (\EasyRdf_Exception $e, $code) use ($app) {
         if ($app['debug']) {
             return;
         }
-
         return new response(sprintf('RDF Library exception', $e->getMessage(), $code), $code);
     }
 );
@@ -86,7 +70,6 @@ $app->error(
         if ($app['debug']) {
             return;
         }
-
         return new response(
             sprintf(
                 'Islandora Collection Service exception: %s / HTTP %d response',
@@ -118,7 +101,6 @@ $app->error(
         if ($app['debug']) {
             return;
         }
-
         return new response(
             sprintf(
                 'Islandora Collection Service uncatched exception: %s %d response',

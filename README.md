@@ -1,14 +1,21 @@
-# CollectionService
+# PDX
 
-This an Islandora PHP Microservice to create PCDM:Collections and add/remove PCDM:Objects to a PCDM:Collection.
+[![Latest Stable Version](https://img.shields.io/packagist/v/Islandora/PDX.svg?style=flat-square)](https://packagist.org/packages/islandora/PDX)
+[![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%205.5-8892BF.svg?style=flat-square)](https://php.net/)
+[![Downloads](https://img.shields.io/packagist/dt/islandora/PDX.svg?style=flat-square)](https://packagist.org/packages/islandora/PDX)
+[![Build Status](https://travis-ci.org/Islandora-CLAW/PDX.svg?branch=master)](https://travis-ci.org/Islandora-CLAW/PDX)
+
+This is a top level container for the various PCDM related Islandora CLAW microservices. It allows you to mount the various endpoints at one port on one machine and makes a development vagrant/docker configuration easier to produce.
 
 ## Requirements
 
+
+* PHP 5.5+
+* [Composer](https://getcomposer.org/)
 * [Chullo](https://github.com/Islandora-CLAW/chullo)
-* [ResourceService](../ResourceService)
-* [TransactionService](../TransactionService)
+* [Crayfish](https://github.com/Islandora-CLAW/Crayfish)
 * [Fedora 4](https://github.com/fcrepo4/fcrepo4)
-* A triplestore (i.e. [BlazeGraph](https://www.blazegraph.com/download/), [Fuseki](https://jena.apache.org/documentation/fuseki2/), etc)
+* A triplestore (i.e. [Blazegraph](https://www.blazegraph.com/download/), [Fuseki](https://jena.apache.org/documentation/fuseki2/), etc)
 
 ## Installation
 
@@ -22,6 +29,18 @@ php -S localhost:<some port> -t src/ src/index.php
 from this directory to start it running.
 
 ## Services
+
+This mounts all the various individual microservices under the `/islandora` URL, so you currently have access to 
+
+* CollectionService at `/islandora/collection`
+
+See the individual services for more information on their endpoints.
+
+### CollectionService
+
+This an Islandora PHP Microservice to create PCDM:Collections and add/remove PCDM:Objects to a PCDM:Collection.
+
+#### Services
 
 The CollectionService provides the following endpoints for HTTP requests. 
 
@@ -42,6 +61,27 @@ The CollectionService provides the following endpoints for HTTP requests.
 2. DELETE to `/collection/{uuid}/member/{member}`
 
     for removing the resource identifier by the UUID {member} from the collection identified by the UUID {uuid}
+
+
+## Sponsors
+
+* UPEI
+* discoverygarden inc.
+* LYRASIS
+* McMaster University
+* University of Limerick
+* York University
+* University of Manitoba
+* Simon Fraser University
+* PALS
+* American Philosophical Society
+* common media inc.
+
+## Maintainers
+
+* [Jared Whiklo](https://github.com/whikloj)
+* [Diego Pino](https://github.com/diegopino)
+* [Nick Ruest](https://github.com/ruebot)
 
 ## License
 
