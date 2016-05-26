@@ -24,7 +24,7 @@ $app->register(new \Silex\Provider\ServiceControllerServiceProvider());
 // TODO: Not register all template directories right now.
 $app->register(new \Silex\Provider\TwigServiceProvider(), array(
   'twig.path' => array(
-    __DIR__ . 'CollectionService/templates',
+    __DIR__ . '/CollectionService/templates',
   ),
 ));
 

@@ -105,15 +105,15 @@ class CollectionController
 
         if (201 == $responsePost->getStatusCode()) {// OK, collection created
             //Lets take the location header in the response
+            $collection_fedora_url = $responsePost->headers->get('location');
             $indirect_container_rdf = $app['twig']->render(
                 'createIndirectContainerfromTS.json',
                 array(
-                  'resource' => $responsePost->headers->get('location'),
+                  'resource' => $collection_fedora_url,
                 )
             );
-
             $subRequestPut = Request::create(
-                $urlRoute.$id,
+                $urlRoute . $id,
                 'PUT',
                 array(),
                 $request->cookies->all(),
@@ -123,29 +123,33 @@ class CollectionController
             );
             $subRequestPut->query->set('tx', $tx);
             $subRequestPut->headers->set('Slug', 'members');
-            //Can't use in middleware, but needed. Without Fedora 4 throws big java errors!
-            $subRequestPut->headers->set('Host', $app['config']['islandora']['fedoraHost'], true);
             $subRequestPut->headers->set('Content-Type', 'application/ld+json');
             $subRequestPut->headers->set('Content-Length', strlen($indirect_container_rdf));
+            $app['islandora.hostHeaderNormalize']($subRequestPut);
             //Here is the thing. We don't know if UUID of the collection we just created is already in the triple store.
             //So what to do?
             //We could just try to use our routes directly, but UUID check agains triplestore we could fail!
             //Let's invoke the controller method directly
+            // $responsePut = $app->handle($subRequestPut, HttpKernelInterface::SUB_REQUEST, false);
             $responsePut = $app['islandora.resourcecontroller']->put(
                 $app,
                 $subRequestPut,
-                $responsePost->headers->get('location'),
+                $collection_fedora_url,
                 "members"
             );
             if (201 == $responsePut->getStatusCode()) {// OK, indirect container created
+                $islandora_collection_uri = $urlRoute.$uuid;
                 //Include headers from the parent one, some of the last one. Basically rewrite everything
                 $putHeaders = $responsePut->getHeaders();
                 //Guzzle psr7 response objects are inmutable. So we have to make this an array and add directly
-                $putHeaders['Link'] = array('<'.$responsePut->getBody().'>; rel="alternate"');
-                $putHeaders['Link'] = array('<'.$urlRoute.$uuid.'/members>; rel="hub"');
-                $putHeaders['Location'] = array($urlRoute.$uuid);
+                $putHeaders['Link'] = array(
+                    '<'.$collection_fedora_url.'>; rel="alternate"',
+                    '<'.$urlRoute.$uuid.'/members>; rel="hub"',
+                );
+                $putHeaders['Location'] = array($islandora_collection_uri);
+                $putHeaders['Content-Length'] = strlen($islandora_collection_uri);
                 //Should i care about the etag?
-                return new Response($putHeaders['Location'][0], 201, $putHeaders);
+                return new Response($islandora_collection_uri, 201, $putHeaders);
             }
 
             return $responsePut;

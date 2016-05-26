@@ -57,6 +57,9 @@ class CollectionServiceProvider implements ServiceProviderInterface, ControllerP
                     }
                 )
             );
+        } else {
+            # Add our templates to the existing twig instance.
+            $app['twig.loader']->addLoader(new \Twig_Loader_Filesystem(__DIR__ . '/../templates'));
         }
         if (!isset($app['api'])) {
             $app['api'] =  $app->share(
