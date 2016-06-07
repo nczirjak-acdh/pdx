@@ -5,6 +5,7 @@
 [![Downloads](https://img.shields.io/packagist/dt/islandora/PDX.svg?style=flat-square)](https://packagist.org/packages/islandora/PDX)
 [![Build Status](https://travis-ci.org/Islandora-CLAW/pdx.svg?branch=master)](https://travis-ci.org/Islandora-CLAW/pdx)
 [![Contribution Guidelines](http://img.shields.io/badge/CONTRIBUTING-Guidelines-blue.svg)](./CONTRIBUTING.md)
+[![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://packagist.org/packages/islandora/PDX)
 
 This is a top level container for the various PCDM related Islandora CLAW microservices. It allows you to mount the various endpoints at one port on one machine and makes a development vagrant/docker configuration easier to produce.
 
