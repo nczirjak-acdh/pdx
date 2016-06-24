@@ -176,7 +176,7 @@ class CollectionController
 
         $urlRoute = $request->getUriForPath('/islandora/resource/');
 
-        $members_uri = $app['islandora.idToUri']($member);
+        $members_uri = $app['islandora.idToUri']($member, $request);
         if (is_a($members_uri, 'Symfony\Component\HttpFoundation\Response')) {
             return $members_uri;
         }
@@ -188,7 +188,7 @@ class CollectionController
             )
         );
 
-        $fullUri = $app['islandora.idToUri']($id);
+        $fullUri = $app['islandora.idToUri']($id, $request);
         if (is_a($fullUri, 'Symfony\Component\HttpFoundation\Response')) {
             return $fullUri;
         }
@@ -206,6 +206,7 @@ class CollectionController
         );
         $newRequest->headers->set('Content-type', 'application/ld+json');
         $newRequest->headers->set('Content-Length', strlen($members_proxy_rdf));
+        $app['islandora.hostHeaderNormalize']($newRequest);
         $response = $app['islandora.resourcecontroller']->post($app, $newRequest, $fullUri);
         if (201 == $response->getStatusCode()) {
             return new Response($response->getBody(), 201, $response->getHeaders());
@@ -235,12 +236,12 @@ class CollectionController
 
         $urlRoute = $request->getUriForPath('/islandora/resource/');
 
-        $collection_uri = $app['islandora.idToUri']($id);
+        $collection_uri = $app['islandora.idToUri']($id, $request);
         if (is_object($collection_uri)) {
             return $collection_uri;
         }
 
-        $member_uri = $app['islandora.idToUri']($member);
+        $member_uri = $app['islandora.idToUri']($member, $request);
         if (is_object($member_uri)) {
             return $member_uri;
         }

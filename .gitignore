@@ -1,3 +1,5 @@
 vendor/
 composer.phar
 installer
+config/settings.dev.yml
+config/settings.yml

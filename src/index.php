@@ -27,6 +27,16 @@ $app->register(new \Silex\Provider\TwigServiceProvider(), array(
     __DIR__ . '/CollectionService/templates',
   ),
 ));
+// Cache for TransactionService
+$app->register(new \Moust\Silex\Provider\CacheServiceProvider(), array(
+    'caches.options' => array(
+        'filesystem' => array(
+            'driver' => 'file',
+            'cache_dir' => '/tmp',
+        ),
+    ),
+));
+
 
 $islandoraCollectionServiceProvider = new CollectionServiceProvider;
 $islandoraCrayfishProvider = new CrayfishProvider;
