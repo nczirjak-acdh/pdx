@@ -1,0 +1,12 @@
+@prefix ldp: <http://www.w3.org/ns/ldp#> .
+@prefix pcdm: <http://pcdm.org/models#> .
+@prefix ore: <http://www.openarchives.org/ore/terms/> .
+@prefix acdh: <http://www.oeaw.ac.at/acdh#> .
+@prefix acdh_meta: <http://www.oeaw.ac.at/acdh_meta#> .
+
+<> a ldp:IndirectContainer ;
+  ldp:membershipResource <{{ resource }}> ;
+  ldp:hasMemberRelation pcdm:hasMember ;
+  ldp:insertedContentRelation ore:proxyFor .
+  acdh:prop1 acdh_meta:prop1 .
+  acdh:prop2 acdh_meta:prop2 .

@@ -1,0 +1,16 @@
+{
+  "@context" : {
+    "ldp" : "http://www.w3.org/ns/ldp#",
+    "pcdm" : "http://pcdm.org/models#",
+    "ore" : "http://www.openarchives.org/ore/terms/",
+    "acdh" : "<http://www.oeaw.ac.at/acdh#>",
+    "acdh_meta" : "<http://www.oeaw.ac.at/acdh_meta#>",
+    "pcdmObject" : { "@id" : "pcdm:Object", "@type" : "@id" },
+    "proxyFor" : {"@id" : "ore:proxyFor", "@type" : "@id" },
+    "prop1" : {"@id" : "acdh_meta:prop1", "@type" : "@id" },
+    "prop2" : {"@id" : "acdh_meta:prop2", "@type" : "@id" }
+  },
+  "@id" : "",
+  "@type" : "pcdmObject",
+  "proxyFor" : "{{ resource }}"
+}

@@ -1,0 +1,24 @@
+{
+  "@context" : {
+    "ldp" : "http://www.w3.org/ns/ldp#",
+    "pcdm" : "http://pcdm.org/models#",
+    "ore" : "http://www.openarchives.org/ore/terms/",
+    "acdh" : "http://www.oeaw.ac.at/acdh#",
+    "acdh_meta"  : "http://www.oeaw.ac.at/acdh_meta#",
+    "IndirectContainer" : {"@id" : "ldp:IndirectContainer" },
+    "membershipResource" : {"@id" : "ldp:membershipResource", "@type" : "@id"},
+    "hasMemberRelation" : {"@id" : "ldp:hasMemberRelation", "@type" : "@id"},
+    "insertedContentRelation" : {"@id" : "ldp:insertedContentRelation", "@type" : "@id"},    
+    "proxyFor" : {"@id" : "ore:proxyFor", "@type" : "@id"},
+    "hasMember" : {"@id" : "pcdm:hasMember", "@type" : "@id"},
+    "prop1" : {"@id" : "acdh:prop1", "@type" : "@id"},
+    "prop2" : {"@id" : "acdh:prop2", "@type" : "@id"}
+  },
+  "@id" : "",
+  "@type" : "IndirectContainer",
+  "membershipResource" : "{{ resource }}",
+  "hasMemberRelation" : "pcdm:hasMember",
+  "insertedContentRelation" : "ore:proxyFor",
+  "prop1" : "acdh_meta:prop1",
+  "prop2" : "acdh_meta:prop2"
+}

@@ -1,0 +1,8 @@
+PREFIX ore: <http://www.openarchives.org/ore/terms/>
+PREFIX ldp: <http://www.w3.org/ns/ldp#>
+PREFIX test: <http://localhost:8080/fcrepo/rest/>
+
+SELECT * WHERE {  
+  test:ACDHCollection <http://acdh.oeaw.ac.at/#prop1> ?value .  
+}
+
