@@ -23,50 +23,48 @@ class ACDHController
     
     /*
      *  Drupal Form Data - metakey processing
+     * 
+     *  We are saving only those keys which are have values
      */
     public function processFormValues($data)
-    {
-        
+    {        
         if(empty($data) && !isset($data)) { return false; }
         
         $keys = array();
         
         foreach ($data as $key => $value)
         {            
-            $keys[] = $key;            
-        }
-        
+            if(!empty($value))
+            {
+                $keys[] = $key;            
+            }
+        }        
         return $keys;                
     }
     
-    /*
-     * This will get the contentType metafields from Fedora4, based on the ContentType
-     */
     
-    public function metaKeys($contentType = null)
+    public function metaKey1()
     {
-        /* two content type for example */
-        /* Symphony replace the . to _ */
-        $data = array();
-        
-        if($contentType == 'XML')
-        {
-            $data = array("asd", "http://aaaa_bbb/ccc", "age", "asd");            
-        }
-        
-        if($contentType == 'XML2')
-        {
-            $data = array("asd2", "http://aaaa_bbb/ccc2", "age2", "asd");            
-        }
-        
-        if($contentType == 'XML3')
-        {
-            $data = array("asd");            
-        }
+        $data = array("test1", "http://aaaa_bbb/ccc", "test2", "test3", "Slug");
         
         return $data;
     }
     
+    public function metaKey2()
+    {
+        $data = array("test1", "http://aaaa_bbb/ccc", "test2", "Slug");            
+        
+        return $data;
+    }
+    
+    public function metaKey3()
+    {
+        $data = array("test1", "Slug");        
+        
+        return $data;
+    }
+
+
     public function getSlugData($data)
     {
         if(empty($data) && !isset($data)) { return false; }
@@ -79,10 +77,59 @@ class ACDHController
         return $slugValue;       
         
     }
+    
+    
+    /*
+     * This will get the contentType metafields from Fedora4, based on the ContentType
+     */
+    
+    public function checkMetaKeys($formKeys)
+    {
+        /* two content type for example */
+        /* Symphony replace the . to _ */
+        
+        if(empty($formKeys) && !isset($formKeys))
+        {
+            return false;
+        }
+        $metaArray = array();
+        
+        if(!empty($this->metaKey1()))
+        {
+            $metaArray['meta1'] = $this->metaKey1();
+        }
+        
+        if(!empty($this->metaKey2()))
+        {
+            $metaArray['meta2'] = $this->metaKey2();
+        }
+        
+        if(!empty($this->metaKey3()))
+        {
+            $metaArray['meta3'] = $this->metaKey3();
+        }
+        
+        foreach($metaArray as $key => $value)
+        {
+            /*
+             *  if there is no difference between the formkeys and the metakeys 
+             *  then we creating metadiff arrays with the fields
+             */
+            
+            if(empty(array_diff($value, $formKeys)))
+            {                
+                $metaDiff[$key] = $metaArray[$key];
+            }
+        }       
+        
+        return $metaDiff;
+    }
+    
+   
 
     public function create(Application $app, Request $request, $id)
     {
-        
+        /* get the uploaded file infos */
         $uplFileName = $request->files->get('fileToUpload')->getClientOriginalName();
         $uplFileTMPPath = $request->files->get('fileToUpload')->getPathName();
         $uplFileName = $request->files->get('fileToUpload')->getFileName();
@@ -90,41 +137,37 @@ class ACDHController
         $uplFileMime = $request->files->get('fileToUpload')->getClientMimeType();
         
         $uplFileContent = file_get_contents($uplFileTMPPath);            
-        
+        /* if the uploaded file is empty */
         if(empty($uplFileContent))
         {
             return false;
-        }       
-        
+        }   
         
         /*
-        * 
         * THE META DATA CHECKING PART
-        * 
         */        
         $objFormVal = $request->request;        
         // get the formkeys
         $formKeys = $this->processFormValues($objFormVal);
-        //get the schema metakeys
-        $metaKeys = $this->metaKeys();
-
+        
         $slugValue = $this->getSlugData($objFormVal);
-/*
+
         //if not empty the form or meta array then compare them
-        if((!empty($formKeys) && isset($formKeys)) 
-               && (!empty($metaKeys) && isset($metaKeys)) 
-         )
-        {              
-           $metaDiff = array_diff($metaKeys, $formKeys);                                      
-           /* here i need to add the sparql query for get the existing collections 
-            *  and then i can compare and select to which collections can use the uploaded file
-            */            
-  /*      }
+        if(!empty($formKeys) && isset($formKeys)) 
+        {                                
+            $metaKeys = $this->checkMetaKeys($formKeys);            
+                        
+            if(empty($metaKeys))
+            {
+                return false;
+            }
+            
+        }
         else
         {
            die("Missing data");
         }           
-    */   
+       
         /* file inserting */
         $headers = array('Content-Type: '.$uplFileMime);    
         $post = array('file_contents'=>$uplFileContent);        
@@ -140,8 +183,22 @@ class ACDHController
         $CollectionURLMeta = $result.'/fcr:metadata';
         $CollectionURL = $result;
                 
-        /* sparql update a form adtaok alapjan */
         
+        /* creating the sparql -  this section is not completed */
+        $dataStringLine = "";
+        var_dump("the usable content types: ");
+        foreach($metaKeys as $key => $values)
+        {      
+            
+            var_dump($key);
+            var_dump("<br>");
+            
+            foreach($values as $value )
+            {        
+                $dataStringLine .="<$CollectionURL> acdh:$value   <http://127.0.0.1:8080/fcrepo/rest/TEI> . ";                                
+            }                            
+        }
+                
         $data_string = "PREFIX acdh: <http://acdh.oeaw.ac.at/#>
                                 INSERT {
                                   
@@ -149,30 +206,28 @@ class ACDHController
                                      <$CollectionURL> acdh:providedBy <http://127.0.0.1/xsltProcessor.php> .
                                 }
                                 WHERE {}";
+        
+        
         $headers = array('Content-Type: application/sparql-update');
         $ch2 = curl_init();
         curl_setopt($ch2, CURLOPT_URL, $CollectionURLMeta);
         curl_setopt($ch2, CURLOPT_POSTFIELDS, $data_string);
         curl_setopt($ch2, CURLOPT_POST,1);
-        curl_setopt($ch2, CURLOPT_CUSTOMREQUEST, 'PATCH');        
+        curl_setopt($ch2, CURLOPT_CUSTOMREQUEST, 'PATCH');
         curl_setopt($ch2, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch2, CURLOPT_HTTPHEADER, $headers);        
+        curl_setopt($ch2, CURLOPT_HTTPHEADER, $headers);
    
         // execute the request
         $result2=curl_exec ($ch2);        
         curl_close ($ch2);
   
-        var_dump("result 1: ");
+        var_dump("File uploading: ");
         var_dump($result);
         var_dump("<br><br><br>");
-        var_dump("URL META: ");
-        var_dump($CollectionURLMeta);
-        var_dump("<br> MIME: ");
-        var_dump($uplFileMime);
-        var_dump("<br><br><br>");
-        var_dump("result 2: ");
+        var_dump("SPARQL query: ");
         var_dump($result2);
-        die("ittt2");
+        
+        die("END");
         
 
     }
