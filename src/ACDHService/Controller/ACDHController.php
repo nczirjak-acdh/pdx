@@ -8,6 +8,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\FileBag;
 use Symfony\Component\HttpFoundation\File;
 use Islandora\Chullo\Uuid\IUuidGenerator;
+use Islandora\Chullo\Chullo;
+use Islandora\Chullo\TriplestoreClient;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use ML\JsonLd\JsonLd;
 
@@ -126,8 +128,56 @@ class ACDHController
     }
     
    
-
     public function create(Application $app, Request $request, $id)
+    {
+        
+        $uplFileTMPPath = $request->files->get('fileToUpload')->getPathName();
+        $uplFileName = $request->files->get('fileToUpload')->getFileName();
+        //$uplFileMime = $request->files->get('fileToUpload')->getMimeType(); 
+        $uplFileMime = $request->files->get('fileToUpload')->getClientMimeType();
+        
+        $uplFileContent = file_get_contents($uplFileTMPPath);            
+        
+        // Instantiated with static factory
+        $chullo = Chullo::create("http://localhost:8080/fcrepo/rest");
+        
+        
+        // Create a new resource
+        $uri = $chullo->createResource(); // http://localhost:8080/fcrepo/rest/0b/0b/6c/68/0b0b6c68-30d8-410c-8a0e-154d0fd4ca20
+        
+        // Parse resource as an EasyRdf Graph
+        $graph = $chullo->getGraph($uri);
+        
+        // Set the resource’s title
+        $graph->set($uri, 'dc:title', 'My Sweet Title');
+
+        // Save the graph to Fedora
+        $chullo->saveGraph($uri, $graph);
+
+        // Open a transaction
+        $transaction = $chullo->createTransaction(); //tx:2b27e944-483d-4e59-a33b-f378bd42faf5
+        
+        $content = $uplFileContent;
+        
+        $child_uri = $chullo->createResource(
+        //$child_uri = $chullo->saveResource(
+            $uri,            
+            $content,            
+             ['Content-Type' => 'text/xml'],
+            $transaction,
+            sha1($content)
+            );
+      
+        // Commit it
+        $chullo->commitTransaction($transaction);
+
+        // Check it out:
+        echo $uri . "\n";
+        echo "child \n";
+        var_dump(print_r($child_uri, true));
+    }
+
+    public function createCurl(Application $app, Request $request, $id)
     {
         /* get the uploaded file infos */
         $uplFileName = $request->files->get('fileToUpload')->getClientOriginalName();
