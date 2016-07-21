@@ -63,9 +63,8 @@ class ACDHServiceProvider implements ServiceProviderInterface, ControllerProvide
         //
         // Define routing referring to controller services
         //
-        $ACDHControllers->post("/acdh/{id}", "islandora.acdhcontroller:post")
-            ->value('id', "")
-            ->bind('islandora.acdhCreate');
+        $ACDHControllers->post("/acdh", "islandora.acdhcontroller:post");
+        $ACDHControllers->get("/acdh", "islandora.acdhcontroller:getCollection");
         return $ACDHControllers;
     }
 

@@ -98,7 +98,7 @@ class ACDHController {
         return $matching;
     }
 
-    public function post(Application $app, Request $request, $id) {
+    public function post(Application $app, Request $request) {
         $file = $this->getRequestFile($request);
 
         $metadata = $this->getRequestMetadata($request);
@@ -141,4 +141,20 @@ class ACDHController {
         return Response::create('', 201, array('Location' => $uri));
     }
 
+    public function getCollection(Application $app, Request $request) {
+        $f = fopen('/tmp/dump', 'w');
+        fwrite($f, "### GET\n");
+        foreach($_GET as $k=>$v){
+            fwrite($f, $k . ' => ' . $v . "\n");
+        }
+        fwrite($f, "### POST\n");
+        foreach($_POST as $k=>$v){
+            fwrite($f, $k . ' => ' . $v . "\n");
+        }
+        fwrite($f, "### SERVER\n");
+        foreach($_SERVER as $k=>$v){
+            fwrite($f, $k . ' => ' . $v . "\n");
+        }
+        fclose($f);
+    }
 }
