@@ -108,7 +108,7 @@ class ACDHController {
         }
 
         $cfg = $app['config']['islandora'];
-        $chullo = Chullo::create($cfg['fedoraHost'] . $cfg['fedoraPath']);
+        $chullo = Chullo::create($cfg['fedoraProtocol'] . '://' . $cfg['fedoraHost'] . $cfg['fedoraPath']);
         $transaction = $chullo->createTransaction();
 
         $uri = $chullo->createResource(
@@ -131,8 +131,7 @@ class ACDHController {
         }
         $sparql = 'INSERT {' . $rdf->serialise('ntriples') . '} WHERE {}';
         
-        $metadataUri = preg_replace('|^[^/]*|', '', $uri) . '/fcr:metadata';
-        $result = $chullo->modifyResource($metadataUri, $sparql, array(), $transaction);
+        $result = $chullo->modifyResource($uri . '/fcr:metadata', $sparql, array(), $transaction);
         if($result === false){
             throw new \RuntimeException('metadata update failed');
         }
