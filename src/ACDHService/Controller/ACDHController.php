@@ -104,7 +104,7 @@ class ACDHController {
         $metadata = $this->getRequestMetadata($request);
         $classes = $this->getMatchingClasses($metadata);
         if (empty($classes)) {
-            throw new \RuntimeException('Metadata does not match any class definition');
+            return Response::create('Metadata does not match any class definition', 400, array());
         }
 
         $cfg = $app['config']['islandora'];
@@ -114,27 +114,32 @@ class ACDHController {
         $uri = $chullo->createResource(
             '', file_get_contents($file['path']), array('Content-Type' => $file['mime']), $transaction
         );
+        if($uri === false){
+            throw new \RuntimeException('Resource was not created');
+        }
 
-        $sparql = array();
+        $rdf = new \EasyRdf_Graph();
         foreach ($metadata as $key => $value) {
             if (preg_match('|^http[s]://|', $value)) {
-                $value = '<' . $value . '>';
+                $rdf->addResource($uri, $key, $value);
             }else{
-                $value = '"' . $value . '"';
+                $rdf->add($uri, $key, $value);
             }
-            $sparql[] = sprintf(' <%s> %s ', $key, $value);
         }
         foreach ($classes as $class) {
-            $sparql[] = sprintf(' a <%s> ', $class);
+            $rdf->addResource($uri, 'a', $class);
+        }
+        $sparql = 'INSERT {' . $rdf->serialise('ntriples') . '} WHERE {}';
+        
+        $metadataUri = preg_replace('|^[^/]*|', '', $uri) . '/fcr:metadata';
+        $result = $chullo->modifyResource($metadataUri, $sparql, array(), $transaction);
+        if($result === false){
+            throw new \RuntimeException('metadata update failed');
         }
 
-        // skip protocol from URI
-        $uri = preg_replace('|^[^/]*|', '', $uri) . '/fcr:metadata';
-        $sparql = 'INSERT { <> ' . implode(';', $sparql) . ' . } WHERE {}';
-        $result = $chullo->modifyResource($uri, $sparql, array(), $transaction);
-
         $chullo->commitTransaction($transaction);
-        return Response::create('', 201, array('uri'=>$uri, 'sparql'=>$sparql, 'result'=>$result));
+        $uri = str_replace('/' . $transaction, '', $uri);
+        return Response::create('', 201, array('Location' => $uri));
     }
 
 }
